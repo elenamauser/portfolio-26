@@ -1,0 +1,24 @@
+/* Impressum & Datenschutz – schlichte Textseiten im Stil der Website (nutzt die Tokens aus style.css) */
+
+.legal {
+  max-width: 44rem;
+  padding: clamp(32px, 6vw, 80px) var(--gutter) var(--space);
+}
+
+.legal-back {
+  display: inline-block;
+  margin-bottom: 3rem;
+  font-size: var(--fs-s);
+  color: var(--navy-soft);
+}
+.legal-back:hover { text-decoration: underline; }
+
+.legal h1 { font-size: var(--fs-l); margin-bottom: 2rem; }
+.legal h2 { font-size: var(--fs-m); font-weight: 700; margin: 2.5rem 0 .75rem; letter-spacing: 0; }
+.legal a { text-decoration: underline; }
+.legal ul { padding-left: 1.2em; margin: 0 0 1em; }
+.legal li { margin-bottom: .35em; }
+.legal .legal-meta { margin-top: 3rem; font-size: var(--fs-s); color: var(--navy-soft); }
+
+/* Platzhalter, die noch ausgefüllt werden müssen – fallen auf, bis sie ersetzt sind */
+.todo { background: #fff3b0; padding: 0 .2em; }

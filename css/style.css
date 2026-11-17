@@ -1,0 +1,731 @@
+/* =========================================
+   Design-Tokens (siehe design.md)
+   Dunkelblau = Text & Flächen · Rot = winziger Akzent
+   ========================================= */
+:root {
+  --footer-h: 64px;
+  --navy: #0b1533;          /* Hauptfarbe: Text, Titel, dunkle Fläche */
+  --navy-soft: #5d6580;     /* Meta-Infos, Bildunterschriften */
+  --tint: #f1f3f7;          /* Platzhalter, Video-Hintergrund */
+  --line: #dde0e8;          /* Trennlinien */
+  --red: #d4321f;           /* Akzent – nur Punkt, Nummern, Schild (Kontrast 4,9:1 auf Weiß) */
+  --white: #ffffff;
+  --yellow: #ffe14a;        /* Schrift auf dem Hero (Riffelglas) */
+
+  --font: Verdana, Geneva, sans-serif;
+
+  /* Nur drei Schriftgrößen
+     Barrierefreiheit (WCAG 2.2 AA): alle Textfarben ≥ 4,5:1, Größen in rem → mit Browser-Zoom skalierbar */
+  --fs-s: .8125rem;                        /* 13 px – Meta, Labels, Captions */
+  --fs-m: 1rem;                            /* 16 px – Fließtext, Navigation, Liste */
+  --fs-l: clamp(1.5rem, 3vw, 2.5rem);      /* Projekttitel, Abschnittstitel */
+
+  --gutter: clamp(16px, 2.2vw, 32px);
+  --space: clamp(64px, 10vw, 140px);
+  --header-height: 60px;
+
+  --ease: cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Schrift über dem Glas-Hero (Navigation, Hero-Zeilen): selbst gehostet, kein Abruf bei Google */
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("../assets/fonts/instrument-sans-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+/* =========================================
+   Basis
+   ========================================= */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: var(--header-height); }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--fs-m);
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--navy);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+h1, h2, h3, h4 { font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; margin: 0; }
+p { margin: 0 0 1em; }
+dl, dd { margin: 0; }
+figure { margin: 0; }
+
+::selection { background: var(--navy); color: var(--white); }
+
+.container { width: 100%; padding-inline: var(--gutter); }
+
+/* =========================================
+   Barrierefreiheit: Hilfsklassen & Fokus
+   ========================================= */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Sprunglink: erst sichtbar, wenn er per Tastatur fokussiert wird */
+.skip-link {
+  position: fixed;
+  top: 8px; left: 8px;
+  z-index: 200;
+  padding: .6rem 1rem;
+  background: var(--navy);
+  color: var(--white);
+  transform: translateY(-200%);
+}
+.skip-link:focus { transform: none; }
+
+/* Deutlich sichtbarer Fokus für Tastatur-Nutzer:innen */
+:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
+
+
+
+.todo { color: var(--red); font-size: var(--fs-s); }
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--tint);
+  color: var(--navy-soft);
+  font-size: var(--fs-s);
+}
+
+/* =========================================
+   Header
+   ========================================= */
+.site-header {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--edge);
+  font-size: var(--fs-m);   /* 16 px */
+  background: transparent;
+  color: var(--navy);
+  border-bottom: 1px solid transparent;
+  transition: border-color .3s, background-color .3s;
+}
+.site-header.is-scrolled {
+  color: var(--navy);
+  background: rgba(255, 255, 255, .94);
+  backdrop-filter: blur(8px);
+  border-bottom-color: var(--line);
+}
+
+.dot { color: var(--red); }
+
+.site-nav ul { display: flex; gap: 1.75rem; list-style: none; margin: 0; padding: 0; }
+.site-nav a { position: relative; display: inline-block; padding-block: 8px; }  /* Klickfläche ≥ 24 px hoch */
+.site-nav a::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s var(--ease);
+}
+.site-nav a:hover::after,
+.site-nav a.is-active::after { transform: scaleX(1); }
+
+.nav-toggle { display: none; color: inherit; }
+
+@media (max-width: 720px) {
+  .nav-toggle {
+    display: flex; flex-direction: column; gap: 6px;
+    background: none; border: 0; padding: 8px; cursor: pointer;
+  }
+  .nav-toggle span { width: 22px; height: 1.5px; background: currentColor; transition: transform .3s var(--ease); }
+  .nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(3.75px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] span:last-child { transform: translateY(-3.75px) rotate(-45deg); }
+
+  .site-nav {
+    position: fixed;
+    inset: var(--header-height) 0 auto 0;
+    background: var(--white);
+    color: var(--navy);
+    border-bottom: 1px solid var(--line);
+    padding: 1.5rem var(--gutter) 2rem;
+    transform: translateY(-130%);
+    transition: transform .35s var(--ease);
+  }
+  .site-nav.is-open { transform: translateY(0); }
+  .site-nav ul { flex-direction: column; gap: .5rem; font-size: 1.125rem; }
+}
+
+/* =========================================
+   Hero – Foto unter Glas, Projekte als abgemalte Sommersprossen
+   ========================================= */
+.hero {
+  position: fixed;               /* bleibt stehen, die Projekte fahren darüber */
+  inset: 0;
+  z-index: 0;
+  height: 100svh;
+  min-height: 480px;
+  overflow: hidden;
+  background: #23383d;           /* Glasfarbe, bis das Bild geladen ist */
+}
+.hero-canvas { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; }
+
+/* Schrift auf dem Glas: gelb, ohne Schatten (das getönte Glas ist dunkel genug) */
+.site-header:not(.is-scrolled),
+.hero-info, .hero-info .wip,
+.scroll-hint { color: var(--yellow); }
+.site-header, .hero-info, .scroll-hint { font-family: "Instrument Sans", var(--font); letter-spacing: .01em; }
+.site-nav a, .logo { font-weight: 500; }
+.hero :focus-visible,
+.site-header:not(.is-scrolled) :focus-visible { outline-color: var(--yellow); }
+
+/* Text unten links */
+.hero-info, .scroll-hint { z-index: 4; transition: opacity .4s var(--ease); }
+.is-scrolled-away .hero-info, .is-scrolled-away .scroll-hint { opacity: 0; pointer-events: none; }
+.hero-info {
+  position: absolute;
+  left: var(--edge);
+  bottom: 18px;
+  max-width: calc(100% - 2 * var(--gutter));
+}
+@media (max-width: 720px) {
+  .hero-info { max-width: calc(100% - 2 * var(--gutter) - 6rem); }
+}
+.subline { margin: 0; font-size: var(--fs-s); }
+.wip { margin: .2rem 0 0; font-size: var(--fs-s); color: var(--navy); }
+
+/* Scroll-Hinweis: kleines Wort + Linie, die nach unten „läuft“ */
+.scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem;
+  font-size: var(--fs-s);
+  color: var(--yellow);
+}
+.scroll-hint:hover { text-decoration: underline; }
+.scroll-line {
+  position: relative;
+  width: 1px;
+  height: 28px;
+  background: rgba(255, 225, 74, .3);
+  overflow: hidden;
+}
+.scroll-line::after {
+  content: "";
+  position: absolute;
+  left: 0; top: -40%;
+  width: 1px; height: 40%;
+  background: currentColor;
+  animation: scroll-run 2.2s var(--ease) infinite;
+}
+@keyframes scroll-run { to { top: 100%; } }
+
+/* =========================================
+   Projekt-Bühne: Karten gleiten über den fixierten Hero
+   ========================================= */
+/* Höhe setzt main.js (Anzahl Karten × Strecke pro Karte). Durchsichtig – dahinter liegt das Glas. */
+.stage { position: relative; z-index: 1; height: 500vh; }
+.stage-sticky {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+.stage-cards { list-style: none; margin: 0; padding: 0; }
+.card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max-content;                          /* so breit wie das Bild – Schatten sitzt direkt am Bild */
+  transform: translate(-50%, -150vh);          /* Startlage oberhalb des Bildschirms; main.js bewegt */
+  will-change: transform;
+}
+.card-link { display: block; color: var(--yellow); }
+.card img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(46vw, 640px);
+  max-height: 62svh;
+  box-shadow: 0 30px 60px -20px rgba(4, 10, 14, .55), 0 8px 18px rgba(4, 10, 14, .25);
+  transition: transform .5s var(--ease);
+}
+.card-link:hover img { transform: scale(1.015); }
+.card-caption {
+  display: flex;
+  width: 0; min-width: 100%;                 /* richtet sich nach der Bildbreite */
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: .9rem;
+  font-family: "Instrument Sans", var(--font);
+}
+.card-nr { font-size: var(--fs-s); }
+.card-title { font-size: var(--fs-l); font-weight: 500; line-height: 1.1; letter-spacing: -.01em; white-space: nowrap; }
+.card-caption { flex-wrap: wrap; row-gap: .2rem; }
+.card-type { margin-left: auto; font-size: var(--fs-s); text-align: right; }
+.card-link:focus-visible { outline-color: var(--yellow); outline-offset: 8px; }
+
+/* Ohne Bewegung: Karten stehen untereinander, kein Fliegen */
+.stage.is-static { height: auto; padding-block: 18vh 10vh; }
+.stage.is-static .stage-sticky { position: static; height: auto; overflow: visible; }
+.stage.is-static .card { position: relative; left: auto; top: auto; transform: none; margin: 0 auto 14vh; }
+
+@media (max-width: 720px) {
+  .card img { max-width: 82vw; max-height: 54svh; }
+  .card-caption { flex-wrap: wrap; gap: .25rem .75rem; }
+  .card-type { margin-left: 0; width: 100%; text-align: left; }
+}
+
+/* Alles nach der Bühne schiebt sich deckend über den Hero */
+.project { position: relative; z-index: 1; background: var(--white); }
+
+/* =========================================
+   Projekt-Detail
+   ========================================= */
+.project { padding-block: calc(var(--space) / 2); }
+.project + .project { border-top: 1px solid var(--line); }
+.stage + .project { padding-top: var(--space); }
+
+.project-head {
+  display: grid;
+  grid-template-columns: 3rem 1fr auto;
+  gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 2rem;
+}
+.project-head .nr { color: var(--red); font-size: var(--fs-s); }
+.project-head h3 { font-size: var(--fs-l); }
+
+.project-meta { display: flex; gap: 2rem; font-size: var(--fs-s); }
+.project-meta dt, .facts dt { color: var(--navy-soft); }
+
+.project-text {
+  max-width: 60ch;
+  margin-left: calc(3rem + 1rem);
+  margin-bottom: 3rem;
+}
+.project-text .note { color: var(--navy-soft); font-size: var(--fs-s); }
+
+.tag {
+  display: inline-block;
+  padding: .15em .6em;
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-size: var(--fs-s);
+  transform: rotate(-2deg);   /* ein bisschen schief – roh & imperfekt */
+}
+
+/* Bilder & Videos: nie beschneiden – Projekte so zeigen, wie sie sind */
+.media img, .media video { display: block; width: 100%; height: auto; }
+.media video { background: var(--tint); }
+.media figcaption a { color: var(--navy); text-decoration: underline; margin-left: .5em; white-space: nowrap; }
+.media--hero { margin-bottom: var(--gutter); }
+.media-grid img { width: 100%; height: auto; }
+.media.placeholder { aspect-ratio: 4 / 3; }
+
+/* Video mit Pause-Knopf (WCAG 2.2.2: bewegte Inhalte müssen anhaltbar sein) */
+.video-wrap { position: relative; }
+
+/* =========================================
+   Picknick Kollektiv Identity: aufgelöster Styleguide
+   Farben & Schriften des Picknick Kollektivs gelten nur in diesen Proben.
+   ========================================= */
+@font-face {
+  font-family: "Bowlby One";
+  src: url("../assets/fonts/bowlby-one-latin.woff2") format("woff2");
+  font-weight: 400; font-display: swap;
+}
+@font-face {
+  font-family: "DM Sans";
+  src: url("../assets/fonts/dm-sans-latin.woff2") format("woff2");
+  font-weight: 400 500; font-display: swap;
+}
+.project--pk {
+  --pk-paper: #F5F1E8; --pk-pale: #EAE3F0; --pk-lilac: #B8ACD3;
+  --pk-berry: #82485F; --pk-ink: #382D3B; --pk-lime: #CDD85A;
+}
+
+.pk-guide { margin-top: calc(var(--space) / 2); }
+.pk-block { margin-bottom: calc(var(--space) / 2); }
+.pk-label { margin-bottom: 1rem; font-size: var(--fs-s); color: var(--navy-soft); letter-spacing: 0; }
+.pk-note { margin: .75rem 0 0; max-width: 60ch; font-size: var(--fs-s); color: var(--navy-soft); }
+
+.pk-stage { display: grid; place-items: center; padding: clamp(32px, 6vw, 96px) var(--gutter); }
+.pk-stage--lilac { background: var(--pk-lilac); }
+.pk-stage--paper { background: var(--pk-paper); }
+.pk-stage img { width: 100%; max-width: 900px; height: auto; }
+
+.pk-mark { display: block; fill: currentColor; overflow: visible; }
+.pk-lockup {
+  display: inline-flex; align-items: center; gap: .5em;
+  font-size: clamp(28px, 5.5vw, 72px);
+  color: var(--pk-paper);
+}
+.pk-lockup .pk-mark { height: 2em; width: calc(2em * 820 / 773); flex: none; }
+.pk-wordmark { font-family: "Bowlby One", var(--font); line-height: .95; letter-spacing: -.035em; white-space: nowrap; }
+
+.pk-split { display: grid; grid-template-columns: 1.2fr 1fr; gap: calc(var(--gutter) * 1.5); align-items: center; }
+.pk-split .pk-stage { min-height: clamp(280px, 36vw, 520px); }
+.pk-mark--moving { width: min(100%, 440px); height: auto; color: var(--pk-berry); }
+.pk-claim { font-size: var(--fs-l); line-height: 1.15; margin-bottom: 1rem; }
+.text-button {
+  margin-top: .5rem; padding: .4rem 0;
+  font: inherit; font-size: var(--fs-s); color: var(--navy);
+  background: none; border: 0; text-decoration: underline; cursor: pointer;
+}
+
+.pk-swatches {
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  list-style: none; margin-block: 0; padding: 0;
+  font-size: var(--fs-s); color: var(--navy-soft);
+}
+/* Farbfelder laufen randlos, die Beschriftung bleibt auf der Textkante */
+.pk-swatches li { padding: 0 .75rem .5rem 0; }
+.pk-swatches li:first-child { padding-left: var(--gutter); }
+.pk-swatches .sw { display: block; height: clamp(90px, 14vw, 200px); margin-bottom: .6rem; background: var(--c); }
+.pk-swatches li:first-child .sw { margin-left: calc(-1 * var(--gutter)); box-shadow: inset 0 0 0 1px var(--line); }
+.pk-swatches b { display: block; font-weight: 400; color: var(--navy); }
+.pk-swatches li:last-child { padding-right: 0; }
+
+.pk-type { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gutter); }
+.pk-type > div { padding-top: .75rem; border-top: 1px solid var(--line); }
+.pk-sample { margin: 0; color: var(--pk-ink); line-height: 1.1; }
+.pk-sample--bowlby { font-family: "Bowlby One", var(--font); font-size: clamp(2.5rem, 7vw, 6rem); letter-spacing: -.04em; }
+.pk-sample--dm { font-family: "DM Sans", var(--font); font-size: clamp(1.5rem, 3.4vw, 3rem); }
+
+
+@media (max-width: 720px) {
+  .pk-split, .pk-type { grid-template-columns: 1fr; }
+  .pk-swatches { grid-template-columns: repeat(3, 1fr); row-gap: 1rem; }
+  .pk-swatches li:nth-child(3n+1) { padding-left: var(--gutter); }
+  .pk-swatches li:nth-child(3n+1) .sw { margin-left: calc(-1 * var(--gutter)); }
+  .pk-swatches li:nth-child(3n) { padding-right: 0; }
+}
+
+/* Randabfallend: läuft bis an den Bildschirmrand */
+.media--wide { grid-column: 1 / -1; }
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gutter);
+  align-items: start;
+  margin-bottom: calc(var(--gutter) * 1.5);
+}
+/* Randabfallend: läuft bis an den Bildschirmrand */
+.media--bleed { margin-inline: calc(-1 * var(--gutter)); }
+.media--bleed > figcaption { padding-inline: var(--gutter); }
+.media--caption-top > figcaption { margin: 0 0 .6rem; }
+.pk-type .pk-label { margin-bottom: .75rem; }
+.media-grid.media--bleed { gap: 4px; margin-bottom: var(--gutter); }
+/* minmax(0, …): Bilder dürfen die Spalten nicht aufdrücken */
+.media-grid.media-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* Moodly: Style System links, Farben + Formen rechts übereinander (Spaltenverhältnis → beide Seiten etwa gleich hoch) */
+.media-grid.media-grid--moodly {
+  grid-template-columns: minmax(0, 1.135fr) minmax(0, 1fr);
+  grid-template-areas: "system farben" "system formen";
+  align-items: start;
+}
+.mg-system { grid-area: system; }
+.mg-farben { grid-area: farben; }
+.mg-formen { grid-area: formen; }
+.media-grid--specimen { grid-template-columns: 2fr 3fr; align-items: center; }
+
+figcaption {
+  margin-top: .5rem;
+  font-size: var(--fs-s);
+  color: var(--navy-soft);
+}
+
+/* Unterprojekt (z. B. Kinderkake) */
+.subproject {
+  margin-top: calc(var(--space) / 2);
+  margin-left: calc(3rem + 1rem);
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--navy);
+}
+.subproject-head { margin-bottom: 1.5rem; }
+.subproject .label { font-size: var(--fs-s); color: var(--navy-soft); }
+.subproject h4 { margin-top: .25rem; font-size: var(--fs-l); }
+.subproject .project-text { margin-left: 0; }
+
+@media (max-width: 720px) {
+  .project-head { grid-template-columns: 2.25rem 1fr; }
+  .project-meta { grid-column: 1 / -1; flex-wrap: wrap; gap: .75rem 1.5rem; }
+  .project-text, .subproject { margin-left: 0; }
+  .media-grid, .media-grid.media-grid--3, .media-grid--specimen { grid-template-columns: 1fr; }
+  .media-grid.media-grid--moodly { grid-template-columns: 1fr; grid-template-areas: "system" "farben" "formen"; }
+}
+
+/* =========================================
+   Lebenslauf: liegt auf dem Hero, gelb, keine Fläche
+   ========================================= */
+.cv {
+  position: relative;
+  z-index: 1;
+  /* Lebenslauf + Footer füllen zusammen genau einen Bildschirm – weiter wird nicht gescrollt */
+  min-height: calc(100svh - var(--footer-h));
+  padding: calc(var(--header-height) + clamp(32px, 7vh, 80px)) var(--edge) clamp(32px, 5vh, 64px);
+  color: var(--yellow);
+  font-family: "Instrument Sans", var(--font);
+}
+.cv-inner { max-width: 1240px; }
+.cv a { color: inherit; }
+.cv :focus-visible { outline-color: var(--yellow); }
+.cv-name {
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 500;
+  letter-spacing: -.03em;
+  line-height: .95;
+  margin-bottom: clamp(32px, 6vh, 64px);
+}
+.cv-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.6fr 1fr;
+  gap: clamp(24px, 3vw, 48px);
+  align-items: start;
+}
+.cv-block h3, .cv-contact h3 {
+  font-size: var(--fs-s);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding-bottom: .5rem;
+  margin-bottom: .9rem;
+  border-bottom: 1px solid rgba(255, 225, 74, .45);
+}
+.cv-block .cv-sub { margin-top: 1.75rem; }
+.cv-block p, .cv-list, .cv-timeline, .cv-plain { font-size: .9375rem; line-height: 1.5; }
+.cv-hint { margin-bottom: .3rem; opacity: .75; font-size: var(--fs-s) !important; }
+.cv-todo { opacity: .7; font-size: var(--fs-s); }
+.cv-list div { display: flex; justify-content: space-between; gap: 1rem; padding: .15rem 0; }
+.cv-list dd { opacity: .8; }
+.cv-timeline, .cv-plain { list-style: none; margin: 0; padding: 0; }
+.cv-timeline li { display: grid; grid-template-columns: 6.2rem 1fr; gap: .75rem; padding-bottom: .9rem; }
+.cv-timeline b, .cv-list dt { font-weight: 500; }
+.cv-year { opacity: .8; font-variant-numeric: tabular-nums; }
+.cv-plain li { padding-bottom: .35rem; }
+
+.cv-contact { margin-top: clamp(48px, 9vh, 96px); max-width: 640px; }
+.cv-mail {
+  display: inline-block;
+  font-size: clamp(1.5rem, 3.4vw, 2.5rem);
+  font-weight: 500;
+  letter-spacing: -.02em;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+.cv-social { display: flex; flex-wrap: wrap; gap: 1.5rem; list-style: none; padding: 0; margin: 1.25rem 0 0; font-size: .9375rem; }
+.cv-social a:hover, .site-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 1100px) { .cv-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) {
+  .cv-grid { grid-template-columns: 1fr; }
+  .cv-timeline li { grid-template-columns: 1fr; gap: .1rem; }
+}
+
+/* Der Hero wird hinter dem Lebenslauf etwas abgedunkelt, damit die Schrift gut lesbar ist */
+.hero::after {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: rgba(4, 8, 10, .55);
+  opacity: 0; transition: opacity .6s var(--ease);
+}
+.is-cv .hero::after { opacity: 1; }
+
+/* Footer: ebenfalls auf dem Hero */
+.site-footer {
+  position: relative; z-index: 1;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem 2rem;
+  min-height: var(--footer-h);
+  padding: 1.25rem var(--edge);
+  font-family: "Instrument Sans", var(--font);
+  font-size: var(--fs-s);
+  color: var(--yellow);
+  border-top: 1px solid rgba(255, 225, 74, .3);
+}
+.site-footer a { color: inherit; }
+.site-footer p { margin: 0; }
+.footer-spacer { flex: 1; }
+
+
+/* =========================================
+   Bewegung: ruhig, kurz, beim Scrollen einblenden
+   ========================================= */
+.reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .reveal { opacity: 1; transform: none; }
+  .scroll-line::after { top: 30%; }   /* Linie steht still */
+}
+
+/* Fokus-Ziel nach internem Link-Klick: kein Rahmen um ganze Abschnitte */
+[tabindex="-1"]:focus { outline: none; }
+
+
+/* =========================================================================
+   RASTER – zwei Kanten für die ganze Seite
+   1. Seitenrand  (--gutter): Kopfzeile, Projektnummern, Hero-Text, Lebenslauf, Footer
+   2. Textkante   (--gutter + --indent): Titel, Texte, Bildunterschriften, alle nicht randlosen Bilder
+   Randlose Elemente laufen von Bildschirmrand zu Bildschirmrand, ihre Beschriftung steht auf der Textkante.
+   Bildunterschriften stehen immer über dem Bild. Zweispaltige Blöcke teilen die Textspalte genau in der Mitte.
+   ========================================================================= */
+:root {
+  --gutter: 48px;
+  --edge: var(--gutter);
+  --indent: 64px;                         /* Spalte für die Projektnummer */
+  --gap: 24px;                            /* Abstand zwischen Spalten */
+  --block: clamp(56px, 7vw, 104px);       /* Abstand zwischen Blöcken */
+  --block-s: 40px;                        /* Text → erstes Bild */
+}
+@media (max-width: 720px) {
+  :root { --gutter: 24px; --indent: 0px; --gap: 16px; --block: 56px; --block-s: 28px; }
+}
+
+/* Projektkopf: Nummer im Rand, Titel auf der Textkante, Angaben rechtsbündig am Seitenrand */
+.project-head { grid-template-columns: var(--indent) 1fr auto; column-gap: 0; margin-bottom: 1.5rem; }
+.project-head h3 { font-family: "Instrument Sans", var(--font); font-weight: 500; letter-spacing: -.02em; }
+.project-meta { margin-left: var(--gap); }
+@media (max-width: 720px) {
+  .project-head { grid-template-columns: 1fr; row-gap: .4rem; }
+  .project-meta { margin-left: 0; }
+}
+
+/* Alles im Projekt (außer Kopf und randlosen Elementen) beginnt auf der Textkante */
+.project .container > :not(.project-head):not(.media--bleed) { margin-left: var(--indent); }
+.project-text { margin-bottom: var(--block-s); }
+.media--hero, .media-grid, .pk-block { margin-bottom: var(--block); }
+.project .container > :last-child, .pk-guide > .pk-block:last-child { margin-bottom: 0; }
+.pk-guide { margin-top: 0; }
+.subproject { margin-top: var(--block); padding-top: 1.25rem; }
+.subproject h4 { font-family: "Instrument Sans", var(--font); font-weight: 500; letter-spacing: -.02em; }
+.subproject .media { margin-left: 0; }
+
+/* Randlos: von Bildschirmrand zu Bildschirmrand */
+.project .container > .media--bleed { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); }
+.pk-guide .media--bleed { margin-left: calc(-1 * (var(--gutter) + var(--indent))); margin-right: calc(-1 * var(--gutter)); }
+.media--bleed > figcaption { padding-inline: calc(var(--gutter) + var(--indent)) var(--gutter); }
+
+/* Bildunterschriften: immer darüber, gleiche Abstände */
+figcaption, .pk-label { margin: 0 0 .6rem; font-size: var(--fs-s); color: var(--navy-soft); }
+
+/* Zweispaltig = Textspalte genau halbiert (Moodly, Prinzip, Schrift, SOS-Grid) */
+.media-grid { gap: var(--gap); }
+.media-grid.media-grid--moodly,
+.media-grid--specimen,
+.pk-split,
+.pk-type { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: var(--gap); }
+.media-grid.media-grid--moodly { row-gap: var(--gap); }
+.pk-split { align-items: center; }
+.pk-split .pk-stage { min-height: 0; aspect-ratio: 4 / 3; }
+.pk-claim { font-family: "Instrument Sans", var(--font); font-weight: 500; letter-spacing: -.02em; }
+.media-grid--specimen { align-items: start; }
+
+/* Farbfelder: erste Beschriftung auf der Textkante */
+.pk-swatches li:first-child { padding-left: calc(var(--gutter) + var(--indent)); }
+.pk-swatches li:first-child .sw { margin-left: calc(-1 * (var(--gutter) + var(--indent))); }
+
+@media (max-width: 720px) {
+  .media-grid.media-grid--moodly, .media-grid--specimen, .pk-split, .pk-type { grid-template-columns: 1fr; }
+  .media-grid.media-grid--moodly { grid-template-areas: "system" "farben" "formen"; }
+  .pk-swatches li:nth-child(3n+1) { padding-left: var(--gutter); }
+  .pk-swatches li:nth-child(3n+1) .sw { margin-left: calc(-1 * var(--gutter)); }
+}
+
+/* Scroll-Hinweis: genau in der Mitte des Heros */
+.scroll-hint { top: 50%; bottom: auto; left: 50%; transform: translate(-50%, -50%); }
+
+
+/* --- Feinschliff --- */
+/* Links bis an den Bildschirmrand (Moodly Style System, SOS-Grid Plakat); Beschriftung bleibt auf der Textkante */
+.project .container > .media-grid.bleed-left { margin-left: calc(-1 * var(--gutter)); }
+.media-grid.bleed-left > figure:first-child > figcaption { padding-left: calc(var(--gutter) + var(--indent)); }
+.media-grid.media-grid--moodly.bleed-left { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+.media-grid--specimen.bleed-left { grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); }
+#sos-grid .media-grid figure:last-child figcaption { margin-bottom: 1.5rem; }
+
+/* Prinzip: Bezeichnung oben, Animation über die Textspalte, Text darunter */
+.pk-principle .pk-stage { aspect-ratio: auto; height: clamp(300px, 34vw, 480px); padding: 0; overflow: hidden; }
+.pk-principle .pk-stage { position: relative; display: block; }
+/* feste Box statt Prozenthöhe im Grid – sonst wird das SVG riesig und läuft aus der Fläche */
+.pk-principle .pk-mark--moving { position: absolute; top: 10%; left: 10%; width: 80%; height: 80%; max-width: none; }
+.pk-principle .pk-copy { max-width: 60ch; margin-top: 1.25rem; }
+.pk-principle .pk-claim { font-size: var(--fs-m); margin-bottom: .4rem; }
+
+/* Schriftproben: kleiner, mehr Luft */
+.pk-type { column-gap: calc(var(--gap) * 3); }
+.pk-sample--bowlby { font-size: clamp(2rem, 4.6vw, 4rem); }
+.pk-sample--dm { font-size: clamp(1.25rem, 2.4vw, 2rem); }
+.pk-sample { overflow-wrap: anywhere; }
+
+@media (max-width: 720px) {
+  .project .container > .media-grid.bleed-left { margin-left: calc(-1 * var(--gutter)); margin-right: calc(-1 * var(--gutter)); }
+  .media-grid.bleed-left > figure > figcaption { padding-inline: var(--gutter); }
+  .media-grid.media-grid--moodly.bleed-left, .media-grid--specimen.bleed-left { grid-template-columns: 1fr; }
+}
+
+
+/* Einheitlicher Play/Pause-Knopf für alle Videos und Animationen: klein, rund, unten rechts im Bild */
+.video-wrap, .pk-principle .pk-stage { position: relative; }
+.media-toggle {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;                 /* Klickfläche ≥ 24 px (WCAG 2.5.8) */
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(11, 21, 51, .72);
+  color: var(--white);
+  cursor: pointer;
+  transition: background-color .2s;
+}
+.media-toggle:hover { background: var(--navy); }
+.media-toggle:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; box-shadow: 0 0 0 4px var(--navy); }
+.media-toggle svg { width: 14px; height: 14px; fill: currentColor; }
+.media-toggle .i-play { display: none; }
+.media-toggle.is-paused .i-play { display: block; }
+.media-toggle.is-paused .i-pause { display: none; }
+/* randlose Videos: Knopf bündig mit dem Seitenrand */
+.media--bleed .media-toggle { right: var(--gutter); }
+@media (max-width: 720px) {
+  .media-toggle { width: 28px; height: 28px; right: 8px; bottom: 8px; }
+  .media--bleed .media-toggle { right: var(--gutter); }
+  .media-toggle svg { width: 12px; height: 12px; }
+}
+
+/* Handy: Farben, Formen (Moodly) und Glyphen (SOS-Grid) nicht randlos – kleiner Rand auf der Textkante */
+@media (max-width: 720px) {
+  .mg-farben img, .mg-formen img,
+  #sos-grid .media-grid figure:last-child img { width: calc(100% - 16px); margin-inline: 8px; }
+}
+
+/* Über mich: gleiche Zeilenabstände wie die Listen daneben (Interessen) */
+.cv-about p { margin: 0; padding-bottom: .35rem; }

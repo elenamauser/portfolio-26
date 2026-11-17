@@ -1,0 +1,61 @@
+/* =========================================================
+   Hero Variante 2 – Anbindung der Kamerafahrt (hero-zoom.css/js) an die Seite
+   Nur für die Zoom-Version (index.html). Überschreibt einzelne Regeln aus style.css, ändert sie aber nicht.
+   ========================================================= */
+
+/* Zoom-Abschnitt liegt über dem fixierten Glas-Hintergrund */
+.hz { z-index: 1; }
+
+/* Glasfarbe neutral grau (das Original in hero-zoom.css hat einen leicht grün-gelben Stich).
+   Gilt für das Glas der Fahrt und den fixierten Hintergrund gleichermaßen, damit kein Übergang sichtbar ist. */
+:root { --hz-g1: #747474; --hz-g2: #5d5d5d; --hz-g3: #434343; --hz-g4: #262626; }
+.hz .hz-lens {
+  background:
+    linear-gradient(112deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.10) 40%, rgba(255,255,255,0) 50%),
+    linear-gradient(112deg, rgba(255,255,255,0) 52%, rgba(255,255,255,.05) 56%, rgba(255,255,255,0) 61%),
+    radial-gradient(120% 95% at 38% 34%, var(--hz-g1) 0%, var(--hz-g2) 38%, var(--hz-g3) 72%, var(--hz-g4) 100%);
+}
+
+/* Fixierter Hintergrund = Endbild der Fahrt (gleiche Glasfläche wie .hz-lens).
+   Darauf fahren die Projektkarten, am Ende liegt hier der Lebenslauf. */
+.hero--lens {
+  background:
+    linear-gradient(112deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.10) 40%, rgba(255,255,255,0) 50%),
+    linear-gradient(112deg, rgba(255,255,255,0) 52%, rgba(255,255,255,.05) 56%, rgba(255,255,255,0) 61%),
+    radial-gradient(120% 95% at 38% 34%, var(--hz-g1) 0%, var(--hz-g2) 38%, var(--hz-g3) 72%, var(--hz-g4) 100%);
+}
+.hero--lens::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(140% 110% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.45) 100%);
+}
+
+/* Schriftfarbe: auf dem hellen Papier dunkelblau, sobald das Glas übernimmt gelb.
+   --hz-ink setzt js/hero-2.js passend zur Scrollposition. */
+.site-header:not(.is-scrolled),
+.hz .hero-info, .hz .hero-info .wip,
+.hz .scroll-hint { color: var(--hz-ink, var(--navy)); }
+.site-header:not(.is-scrolled) :focus-visible,
+.hz :focus-visible { outline-color: currentColor; }
+.hz .scroll-line { background: color-mix(in srgb, currentColor 30%, transparent); }
+
+/* Infotext und Scroll-Hinweis liegen in der mitlaufenden Bühne der Fahrt */
+.hz .hero-info { z-index: 4; }
+.hz .scroll-hint { z-index: 4; }
+
+/* Reduzierte Bewegung: keine Fahrt, das Glas steht sofort (hero-zoom.js zeigt dann das Endbild) */
+@media (prefers-reduced-motion: reduce) {
+  .hz { height: 100svh; }
+}
+
+/* Scroll-Hinweis: unten rechts, Wort auf einer Linie mit dem Infotext links, Strich mittig darüber */
+.hz .scroll-hint { top: auto; left: auto; right: var(--edge); bottom: 18px; transform: none;
+                   flex-direction: column-reverse; align-items: center; padding: 0; }
+.hz .scroll-hint span:first-child { line-height: inherit; }
+
+/* Ende der Fahrt: Bühne durchsichtig, Foto und Fahrt-Glas aus – sichtbar bleibt nur die fixierte
+   Glasfläche (.hero--lens). Dadurch fährt beim Weiterscrollen nichts sichtbar hinaus. */
+.hz.is-done .hz-stage { background: transparent; }
+.hz.is-done .hz-figure,
+.hz.is-done .hz-lens { visibility: hidden; }
+.hz.is-done .hero-info,
+.hz.is-done .scroll-hint { visibility: hidden; }
